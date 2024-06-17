@@ -43,13 +43,6 @@ def download_dataset(dataset, path):
         shutil.move(os.getenv("OLD_BRAIN_TUMOR_PATH"), os.getenv("BRAIN_TUMOR_PATH"))
         shutil.move(os.getenv("OLD_BRAIN_HEALTH_PATH"), os.getenv("BRAIN_HEALTH_PATH"))
         shutil.rmtree(os.getenv("OLD_BRAIN_DATASET_PARENT_PATH"))
-        
-    # En el caso de estar descargando en dataset de segmentación
-    if  dataset == os.getenv("DATASET_SEGMENTATION"):
-        # Borramos las dos carpetas padre
-        shutil.move(os.getenv("OLD_SEGMENTATION_PATH"), os.getenv("NEW_SEGMENTATION_PATH"))
-        shutil.rmtree(os.getenv("OLD_SEGMENTATION_PARENT_PATH"))
-
 
 def create_kaggle_file(username, key) -> None:
     # Obtenemos la ruta de kaggle
@@ -79,23 +72,15 @@ if __name__ == '__main__':
     
     create_kaggle_file(USERNAME, KEY)
     
-    # Configuración para la detección
-    env_file_path = f'.{os.sep}config{os.sep}.env.detection'
-    load_dotenv(env_file_path)
-    DATASET_DETECTION = os.getenv('DATASET_NAME')
-    DATASET_DETECTION_PATH = os.getenv('DATASET_PATH')
-    
-    # Configuración para la clasificación
-    env_file_path = f'.{os.sep}config{os.sep}.env.classification'
-    load_dotenv(env_file_path)
-    DATASET_CLASSIFICATION = os.getenv('DATASET_NAME')
-    DATASET_CLASSIFICATION_PATH = os.getenv('DATASET_PATH')
-    
-    # Configuración para la segmentación
-    env_file_path = f'.{os.sep}config{os.sep}.env.segmentation'
-    load_dotenv(env_file_path)
-    DATASET_SEGMENTATION = os.getenv('DATASET_NAME')
-    DATASET_SEGMENTATION_PATH = os.getenv('DATASET_PATH')
+    # Nombre de los datasets
+    DATASET_DETECTION = os.getenv('DATASET_DETECTION')
+    DATASET_CLASSIFICATION = os.getenv('DATASET_CLASSIFICATION')
+    DATASET_SEGMENTATION = os.getenv('DATASET_SEGMENTATION')
+   
+    # Rutas de los dataset
+    DATASET_DETECTION_PATH = os.getenv('DATASET_DETECTION_PATH')
+    DATASET_CLASSIFICATION_PATH = os.getenv('DATASET_CLASSIFICATION_PATH')
+    DATASET_SEGMENTATION_PATH = os.getenv('DATASET_SEGMENTATION_PATH')
     
     # Descargamos los datasets
     download_dataset(DATASET_DETECTION, DATASET_DETECTION_PATH)
@@ -104,7 +89,7 @@ if __name__ == '__main__':
     
     end_time = time.time() - start_time
     
-    print(f'Todos los datasets se han descargado, tiempo total {end_time} segundos')
+    print(f'Todos los datasets se han descargado, tiempo total {round(end_time, 2)} segundos')
     
     
 
