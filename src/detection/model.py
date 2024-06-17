@@ -1,5 +1,4 @@
-from models import alexnet
-from models import vgg19
+from src.models import alexnet, vgg19
 
 def create_alexnet(img_height, img_width, img_deep, num_categories, activation):
     return alexnet.create_model(

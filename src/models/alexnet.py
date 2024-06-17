@@ -1,4 +1,5 @@
 import tensorflow.keras as kr
+import tensorflow as tf
 
 def create_model(img_height, img_width, img_deep, num_categories, activation):
     model  = kr.Sequential([
@@ -29,3 +30,13 @@ def create_model(img_height, img_width, img_deep, num_categories, activation):
         # kr.layers.Dropout(0.5),
         kr.layers.Dense(num_categories, activation=activation)
     ])
+    
+    model.compile(
+        optimizer = tf.optimizers.Adam(1e4), 
+        metrics = [tf.metrics.Accuracy()],
+        loss = tf.losses.BinaryCrossentropy()
+        )
+    
+    model.summary()
+    
+    return model
