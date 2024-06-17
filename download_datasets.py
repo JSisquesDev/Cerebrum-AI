@@ -71,22 +71,31 @@ if __name__ == '__main__':
     start_time = time.time()
     
     # Cargamos las variables de entorno
-    load_dotenv()
+    env_file_path = f'.{os.sep}config{os.sep}.env'
+    load_dotenv(env_file_path)
     
     USERNAME = os.getenv('KAGGLE_USERNAME')
     KEY = os.getenv('KAGGLE_API_KEY')
     
     create_kaggle_file(USERNAME, KEY)
     
-    # Nombre de los datasets
-    DATASET_DETECTION = os.getenv('DATASET_DETECTION')
-    DATASET_CLASSIFICATION = os.getenv('DATASET_CLASSIFICATION')
-    DATASET_SEGMENTATION = os.getenv('DATASET_SEGMENTATION')
-   
-    # Rutas de los dataset
-    DATASET_DETECTION_PATH = os.getenv('DATASET_DETECTION_PATH')
-    DATASET_CLASSIFICATION_PATH = os.getenv('DATASET_CLASSIFICATION_PATH')
-    DATASET_SEGMENTATION_PATH = os.getenv('DATASET_SEGMENTATION_PATH')
+    # Configuración para la detección
+    env_file_path = f'.{os.sep}config{os.sep}.env.detection'
+    load_dotenv(env_file_path)
+    DATASET_DETECTION = os.getenv('DATASET_NAME')
+    DATASET_DETECTION_PATH = os.getenv('DATASET_PATH')
+    
+    # Configuración para la clasificación
+    env_file_path = f'.{os.sep}config{os.sep}.env.classification'
+    load_dotenv(env_file_path)
+    DATASET_CLASSIFICATION = os.getenv('DATASET_NAME')
+    DATASET_CLASSIFICATION_PATH = os.getenv('DATASET_PATH')
+    
+    # Configuración para la segmentación
+    env_file_path = f'.{os.sep}config{os.sep}.env.segmentation'
+    load_dotenv(env_file_path)
+    DATASET_SEGMENTATION = os.getenv('DATASET_NAME')
+    DATASET_SEGMENTATION_PATH = os.getenv('DATASET_PATH')
     
     # Descargamos los datasets
     download_dataset(DATASET_DETECTION, DATASET_DETECTION_PATH)
