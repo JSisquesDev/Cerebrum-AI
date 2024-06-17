@@ -11,7 +11,7 @@ os.system("pip3 install -r requirements.txt")
 path = os.path.abspath("./")
 os.putenv("PROJECT_PATH", path)
 
-env_variables ={}
+env_variables = {}
 
 with open(".env", "r") as f:
     for line in f.readlines():

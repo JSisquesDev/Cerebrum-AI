@@ -1,7 +1,7 @@
 python-dotenv
 kaggle
 matplotlib
-numpy
+numpy==1.26.4
 ipython
 nbconvert
 jupyter
