@@ -23,11 +23,11 @@ def create_model(img_height, img_width, img_deep, num_categories, activation):
 
         # Bloque 05
         kr.layers.Dense(9216, activation='relu'),
-        # kr.layers.Dropout(0.5),
+        kr.layers.Dropout(0.5),
         kr.layers.Dense(4096, activation='relu'),
-        # kr.layers.Dropout(0.5),
+        kr.layers.Dropout(0.5),
         kr.layers.Dense(4096, activation='relu'),
-        # kr.layers.Dropout(0.5),
+        kr.layers.Dropout(0.5),
         kr.layers.Dense(num_categories, activation=activation)
     ])
     
