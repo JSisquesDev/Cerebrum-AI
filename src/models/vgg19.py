@@ -36,7 +36,6 @@ def create_model(img_height, img_width, img_deep, num_categories, activation):
 
         # Bloque 06
         kr.layers.Flatten(),
-        kr.layers.Dropout(0.3),
 
         # Bloque 07
         kr.layers.Dense(4096, activation='relu'),
@@ -47,7 +46,7 @@ def create_model(img_height, img_width, img_deep, num_categories, activation):
     ])
     
     model.compile(
-        optimizer = 'adam', 
+        optimizer = tf.optimizers.Adam(learning_rate=1e-4), 
         metrics = ['accuracy'],
         loss = 'binary_crossentropy'
         )

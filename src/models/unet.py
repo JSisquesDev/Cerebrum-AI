@@ -1,0 +1,94 @@
+import tensorflow.keras as kr
+import tensorflow as tf
+
+def create_model(img_height, img_width, img_deep, activation):
+    # Bloque de entrada
+    inputs = tf.keras.layers.Input((img_height, img_width, img_deep))
+    
+    # Bloque 01
+    conv1 = tf.keras.layers.Conv2D(64, (3, 3), padding='same')(inputs)
+    act1 = tf.keras.layers.Activation('relu')(conv1)
+    conv1 = tf.keras.layers.Conv2D(64, (3, 3), padding='same')(act1)
+    bn1 = tf.keras.layers.BatchNormalization(axis=3)(conv1)
+    act1 = tf.keras.layers.Activation('relu')(bn1)
+    pool1 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(act1)
+
+    # Bloque 02
+    conv2 = tf.keras.layers.Conv2D(128, (3, 3), padding='same')(pool1)
+    act2 = tf.keras.layers.Activation('relu')(conv2)
+    conv2 = tf.keras.layers.Conv2D(128, (3, 3), padding='same')(act2)
+    bn2 = tf.keras.layers.BatchNormalization(axis=3)(conv2)
+    act2 = tf.keras.layers.Activation('relu')(bn2)
+    pool2 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(act2)
+
+    # Bloque 03
+    conv3 = tf.keras.layers.Conv2D(256, (3, 3), padding='same')(pool2)
+    act3 = tf.keras.layers.Activation('relu')(conv3)
+    conv3 = tf.keras.layers.Conv2D(256, (3, 3), padding='same')(act3)
+    bn3 = tf.keras.layers.BatchNormalization(axis=3)(conv3)
+    act3 = tf.keras.layers.Activation('relu')(bn3)
+    pool3 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(act3)
+
+    # Bloque 04
+    conv4 = tf.keras.layers.Conv2D(512, (3, 3), padding='same')(pool3)
+    act4 = tf.keras.layers.Activation('relu')(conv4)
+    conv4 = tf.keras.layers.Conv2D(512, (3, 3), padding='same')(act4)
+    bn4 = tf.keras.layers.BatchNormalization(axis=3)(conv4)
+    act4 = tf.keras.layers.Activation('relu')(bn4)
+    pool4 = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(act4)
+
+    # Bloque 05
+    conv5 = tf.keras.layers.Conv2D(1024, (3, 3), padding='same')(pool4)
+    act5 = tf.keras.layers.Activation('relu')(conv5)
+    conv5 = tf.keras.layers.Conv2D(1024, (3, 3), padding='same')(act5)
+    bn5 = tf.keras.layers.BatchNormalization(axis=3)(conv5)
+    act5 = tf.keras.layers.Activation('relu')(bn5)
+
+    # Bloque 06
+    up6 = tf.keras.layers.concatenate([tf.keras.layers.Conv2DTranspose(512, (2, 2), strides=(2, 2), padding='same')(act5), conv4], axis=3)
+    conv6 = tf.keras.layers.Conv2D(512, (3, 3), padding='same')(up6)
+    act6 = tf.keras.layers.Activation('relu')(conv6)
+    conv6 = tf.keras.layers.Conv2D(512, (3, 3), padding='same')(act6)
+    bn6 = tf.keras.layers.BatchNormalization(axis=3)(conv6)
+    act6 = tf.keras.layers.Activation('relu')(bn6)
+
+    # Bloque 07
+    up7 = tf.keras.layers.concatenate([tf.keras.layers.Conv2DTranspose(256, (2, 2), strides=(2, 2), padding='same')(act6), conv3], axis=3)
+    conv7 = tf.keras.layers.Conv2D(256, (3, 3), padding='same')(up7)
+    act7 = tf.keras.layers.Activation('relu')(conv7)
+    conv7 = tf.keras.layers.Conv2D(256, (3, 3), padding='same')(act7)
+    bn7 = tf.keras.layers.BatchNormalization(axis=3)(conv7)
+    act7 = tf.keras.layers.Activation('relu')(bn7)
+
+    # Bloque 08
+    up8 = tf.keras.layers.concatenate([tf.keras.layers.Conv2DTranspose(128, (2, 2), strides=(2, 2), padding='same')(act7), conv2], axis=3)
+    conv8 = tf.keras.layers.Conv2D(128, (3, 3), padding='same')(up8)
+    act8 = tf.keras.layers.Activation('relu')(conv8)
+    conv8 = tf.keras.layers.Conv2D(128, (3, 3), padding='same')(act8)
+    bn8 = tf.keras.layers.BatchNormalization(axis=3)(conv8)
+    act8 = tf.keras.layers.Activation('relu')(bn8)
+
+    # Bloque 09
+    up9 = tf.keras.layers.concatenate([tf.keras.layers.Conv2DTranspose(64, (2, 2), strides=(2, 2), padding='same')(act8), conv1], axis=3)
+    conv9 = tf.keras.layers.Conv2D(64, (3, 3), padding='same')(up9)
+    act9 = tf.keras.layers.Activation('relu')(conv9)
+    conv9 = tf.keras.layers.Conv2D(64, (3, 3), padding='same')(act9)
+    bn9 = tf.keras.layers.BatchNormalization(axis=3)(conv9)
+    act9 = tf.keras.layers.Activation('relu')(bn9)
+
+    # Bloque de salida
+    outputs = tf.keras.layers.Conv2D(1, (1, 1), activation=activation)(act9)
+
+    model = tf.keras.models.Model(inputs=[inputs], outputs=[outputs])
+    
+    # opt = tf.keras.optimizers.Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=None, decay=decay_rate, amsgrad=False)
+    
+    model.compile(
+        optimizer = tf.optimizers.Adam(learning_rate=1e-4), 
+        metrics = ['accuracy'],
+        loss = 'binary_crossentropy'
+        )
+    
+    model.summary()
+    
+    return model

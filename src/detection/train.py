@@ -41,7 +41,7 @@ if __name__ == '__main__':
     ACTIVATION = str(os.getenv('ACTIVATION'))
     COLOR_MODE = str(os.getenv('COLOR_MODE'))
     CLASS_MODE = str(os.getenv('CLASS_MODE'))
-    
+    '''
     # Cargamos las variables para el modelo AlexNet
     model_path = f"{OUTPUT_PATH}{os.sep}{str(os.getenv('ALEXNET_MODEL_NAME'))}{os.sep}{str(os.getenv('ALEXNET_MODEL_NAME'))}"
     checkpoint_path = f"{OUTPUT_PATH}{os.sep}{str(os.getenv('ALEXNET_MODEL_NAME'))}{os.sep}checkpoint{os.sep}checkpoint.h5"
@@ -118,4 +118,3 @@ if __name__ == '__main__':
     # Guardamos el modelo VGG19
     acc = round(history.history["accuracy"][-1] * 100)
     vgg19.save(f'{model_path}_{acc}.h5', save_format='tf')
-    '''
