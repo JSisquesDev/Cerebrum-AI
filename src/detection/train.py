@@ -79,6 +79,7 @@ if __name__ == '__main__':
     # Guardamos el modelo AlexNet con el valor accuracy
     acc = round(history.history["accuracy"][-1] * 100)
     alexnet.save(f'{model_path}_{acc}.h5', save_format='tf')
+    '''
     
     # Cargamos las variables para el modelo VGG19
     model_path = f"{OUTPUT_PATH}{os.sep}{str(os.getenv('VGG19_MODEL_NAME'))}{os.sep}{str(os.getenv('VGG19_MODEL_NAME'))}"
@@ -117,3 +118,4 @@ if __name__ == '__main__':
     # Guardamos el modelo VGG19
     acc = round(history.history["accuracy"][-1] * 100)
     vgg19.save(f'{model_path}_{acc}.h5', save_format='tf')
+    '''

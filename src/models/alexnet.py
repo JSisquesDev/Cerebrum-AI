@@ -19,22 +19,21 @@ def create_model(img_height, img_width, img_deep, num_categories, activation):
         
         # Bloque 04
         kr.layers.Flatten(),
-        # kr.layers.Dropout(0.5),
-
+        
         # Bloque 05
         kr.layers.Dense(9216, activation='relu'),
-        kr.layers.Dropout(0.5),
+        kr.layers.Dropout(0.3),
         kr.layers.Dense(4096, activation='relu'),
-        kr.layers.Dropout(0.5),
+        kr.layers.Dropout(0.3),
         kr.layers.Dense(4096, activation='relu'),
-        kr.layers.Dropout(0.5),
+        kr.layers.Dropout(0.3),
         kr.layers.Dense(num_categories, activation=activation)
     ])
     
     model.compile(
-        optimizer = tf.optimizers.Adam(1e4), 
-        metrics = [tf.metrics.Accuracy()],
-        loss = tf.losses.BinaryCrossentropy()
+        optimizer = tf.optimizers.Adam(learning_rate=1e-4), 
+        metrics = ['accuracy'],
+        loss = 'binary_crossentropy'
         )
     
     model.summary()
