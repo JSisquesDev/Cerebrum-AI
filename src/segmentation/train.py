@@ -1,20 +1,27 @@
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from dotenv import load_dotenv
 from src.segmentation.model import create_unet
-from src.segmentation.data import load_data
+from src.segmentation.data import load_data, get_training_files, create_dataframe, split_dataframe
 
 import tensorflow as tf
 
 import os
 import time
 
-def train(model, train_data, validation_data, epochs, callbacks):
+def train(model, train_gen, steps_per_epoch, validation_data, epochs, callbacks, validation_steps):
     
     # Iniciamos el crono
     start = time.time()
     
     # Entrenamos el modelo
-    result = model.fit(train_data, epochs=epochs, callbacks=callbacks, validation_data=validation_data)
+    result = model.fit(
+        train_gen,
+        steps_per_epoch = steps_per_epoch, 
+        epochs = epochs,
+        callbacks = callbacks,
+        validation_data = validation_data,
+        validation_steps = validation_steps
+    )
     
     # Paramos el crono
     end = time.time() - start
@@ -42,9 +49,6 @@ if __name__ == '__main__':
     OUTPUT_PATH = str(os.getenv("MODEL_PATH"))
     DATASET_PATH = str(os.getenv("DATASET_PATH"))
     RESTORE_BEST_WEIGHTS = bool(os.getenv("RESTORE_BEST_WEIGHTS"))
-    ACTIVATION = str(os.getenv('ACTIVATION'))
-    COLOR_MODE = str(os.getenv('COLOR_MODE'))
-    CLASS_MODE = str(os.getenv('CLASS_MODE'))
     
     # Cargamos las variables para el modelo UNET
     model_path = f"{OUTPUT_PATH}{os.sep}{str(os.getenv('UNET_MODEL_NAME'))}{os.sep}{str(os.getenv('UNET_MODEL_NAME'))}"
@@ -55,31 +59,55 @@ if __name__ == '__main__':
     img_height = int(os.getenv("UNET_IMG_HEIGHT"))
     img_width = int(os.getenv("UNET_IMG_WIDTH"))
     img_deep = int(os.getenv("UNET_IMG_DEEP"))
+    activation = str(os.getenv("UNET_ACTIVATION"))
+    image_color_mode = str(os.getenv("UNET_IMAGE_COLOR_MODE"))
+    mask_color_mode = str(os.getenv("UNET_MASK_COLOR_MODE"))
+    image_save_prefix = str(os.getenv("UNET_IMAGE_SAVE_PREFIX"))
+    mask_save_prefix = str(os.getenv("UNET_MASK_SAVE_PREFIX"))
     
-    # Cargamos los datos para VGG19
-    train_data, validation_data = load_data(DATASET_PATH, (img_height, img_width), batch_size, COLOR_MODE, CLASS_MODE)
+    # Obtenemos los ficheros para entrenar al modelo
+    train_files, mask_files = get_training_files(DATASET_PATH)
     
-    # Obtenemos las etiquetas y el número de categorias
-    labels = train_data.class_indices
-    num_categories = labels.__len__() - 1
+    # Creamos el dataframe
+    dataframe = create_dataframe(
+        train_files=train_files, 
+        mask_files=mask_files
+    )
     
-    # Generamos el modelo VGG19
-    vgg19 = create_vgg19(img_height, img_width, img_deep, num_categories, ACTIVATION)
+    # Dividimos el dataframe en train, validation y test
+    df_train, df_val, df_test = split_dataframe(dataframe)
     
-    # Generamos los callbacks para VGG19
+    # Cargamos los datos para UNET
+    train_gen, test_gen = load_data(
+        dataframe = dataframe,
+        target_size = (img_height, img_width),
+        batch_size = batch_size,
+        image_color_mode = image_color_mode,
+        image_save_prefix = image_save_prefix,
+        mask_color_mode = mask_color_mode,
+        mask_save_prefix = mask_save_prefix,
+        seed = 1
+    )
+    
+    # Generamos el modelo UNET
+    unet = create_unet(img_height, img_width, img_deep, activation, epochs)
+    
+    # Generamos los callbacks para UNET
     early_stopping = EarlyStopping(monitor='val_loss', patience=patience, restore_best_weights=RESTORE_BEST_WEIGHTS)
     checkpoint = ModelCheckpoint(checkpoint_path, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
     callbacks=[early_stopping, checkpoint]
  
     # Entrenamos el modelo VGG19
     history = train(
-        model = vgg19,
-        train_data = train_data,
-        validation_data = validation_data,
+        model = unet,
+        train_gen = train_gen,
+        steps_per_epoch = len(df_train) / batch_size,
+        validation_data = test_gen,
         epochs = epochs,
-        callbacks = callbacks
+        callbacks = callbacks,
+        validation_steps = len(df_val) / batch_size
     )
     
-    # Guardamos el modelo VGG19
-    acc = round(history.history["accuracy"][-1] * 100)
-    vgg19.save(f'{model_path}_{acc}.h5', save_format='tf')
+    # Guardamos el modelo Unet
+    acc = round(history.history["binary_accuracy"][-1] * 100)
+    unet.save(f'{model_path}_{acc}.h5', save_format='tf')

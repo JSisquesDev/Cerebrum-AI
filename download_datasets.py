@@ -44,6 +44,12 @@ def download_dataset(dataset, path):
         shutil.move(os.getenv("OLD_BRAIN_HEALTH_PATH"), os.getenv("BRAIN_HEALTH_PATH"))
         shutil.rmtree(os.getenv("OLD_BRAIN_DATASET_PARENT_PATH"))
 
+    # En el caso de estar descargando en dataset de segmentación
+    if  dataset == os.getenv("DATASET_SEGMENTATION"):
+        # Borramos una de las carpetas, no hace falta
+        shutil.move(os.getenv("OLD_SEGMENTATION_PATH"), os.getenv("NEW_SEGMENTATION_PATH"))
+        shutil.rmtree(os.getenv("OLD_SEGMENTATION_PARENT_PATH"))
+
 def create_kaggle_file(username, key) -> None:
     # Obtenemos la ruta de kaggle
     KAGGLE_PATH = os.path.expanduser('~/.kaggle')
@@ -83,8 +89,8 @@ if __name__ == '__main__':
     DATASET_SEGMENTATION_PATH = os.getenv('DATASET_SEGMENTATION_PATH')
     
     # Descargamos los datasets
-    download_dataset(DATASET_DETECTION, DATASET_DETECTION_PATH)
-    download_dataset(DATASET_CLASSIFICATION, DATASET_CLASSIFICATION_PATH)
+    # download_dataset(DATASET_DETECTION, DATASET_DETECTION_PATH)
+    # download_dataset(DATASET_CLASSIFICATION, DATASET_CLASSIFICATION_PATH)
     download_dataset(DATASET_SEGMENTATION, DATASET_SEGMENTATION_PATH)
     
     end_time = time.time() - start_time

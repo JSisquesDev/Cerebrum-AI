@@ -1,7 +1,31 @@
 import tensorflow.keras as kr
 import tensorflow as tf
 
-def create_model(img_height, img_width, img_deep, activation):
+# Constantes
+SMOOTH = 100
+
+def dice_coef(y_true, y_pred):
+    y_truef=tf.keras.backend.flatten(y_true)
+    y_predf=tf.keras.backend.flatten(y_pred)
+    And=tf.keras.backend.sum(y_truef* y_predf)
+    return((2* And + SMOOTH) / (tf.keras.backend.sum(y_truef) + tf.keras.backend.sum(y_predf) + SMOOTH))
+
+def dice_coef_loss(y_true, y_pred):
+    return -dice_coef(y_true, y_pred)
+
+def iou(y_true, y_pred):
+    intersection = tf.keras.backend.sum(y_true * y_pred)
+    sum_ = tf.keras.backend.sum(y_true + y_pred)
+    jac = (intersection + SMOOTH) / (sum_ - intersection + SMOOTH)
+    return jac
+
+def jac_distance(y_true, y_pred):
+    y_truef=tf.keras.backend.flatten(y_true)
+    y_predf=tf.keras.backend.flatten(y_pred)
+
+    return - iou(y_true, y_pred)
+
+def create_model(img_height, img_width, img_deep, activation, epochs):
     # Bloque de entrada
     inputs = tf.keras.layers.Input((img_height, img_width, img_deep))
     
@@ -81,13 +105,17 @@ def create_model(img_height, img_width, img_deep, activation):
 
     model = tf.keras.models.Model(inputs=[inputs], outputs=[outputs])
     
-    # opt = tf.keras.optimizers.Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=None, decay=decay_rate, amsgrad=False)
+    # Establecemos el learning rate
+    learning_rate = 1e-4
+    
+    decay_rate = learning_rate / epochs
+    optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=None, decay=decay_rate, amsgrad=False)
     
     model.compile(
-        optimizer = tf.optimizers.Adam(learning_rate=1e-4), 
-        metrics = ['accuracy'],
-        loss = 'binary_crossentropy'
-        )
+        optimizer = optimizer,
+        metrics=["binary_accuracy", iou, dice_coef],
+        loss = dice_coef_loss
+    )
     
     model.summary()
     
