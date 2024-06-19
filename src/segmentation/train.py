@@ -4,9 +4,11 @@ from src.segmentation.model import create_unet
 from src.segmentation.data import load_data, get_training_files, create_dataframe, split_dataframe
 
 import tensorflow as tf
+import pandas as pd
 
 import os
 import time
+import math 
 
 def train(model, train_gen, steps_per_epoch, validation_data, epochs, callbacks, validation_steps):
     
@@ -94,10 +96,10 @@ if __name__ == '__main__':
     
     # Generamos los callbacks para UNET
     early_stopping = EarlyStopping(monitor='val_loss', patience=patience, restore_best_weights=RESTORE_BEST_WEIGHTS)
-    checkpoint = ModelCheckpoint(checkpoint_path, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
+    checkpoint = ModelCheckpoint(checkpoint_path, monitor='val_binary_accuracy', verbose=1, save_best_only=True, mode='max')
     callbacks=[early_stopping, checkpoint]
  
-    # Entrenamos el modelo VGG19
+    # Entrenamos el modelo UNET
     history = train(
         model = unet,
         train_gen = train_gen,
@@ -109,5 +111,9 @@ if __name__ == '__main__':
     )
     
     # Guardamos el modelo Unet
-    acc = round(history.history["binary_accuracy"][-1] * 100)
+    acc = math.floor(history.history["binary_accuracy"][-1] * 100)
     unet.save(f'{model_path}_{acc}.h5', save_format='tf')
+    
+    # Creamos un dataframe con el historial del entrenamiento y lo guardamos
+    history_dataframe = pd.DataFrame(history.history)
+    history_dataframe.to_csv(f'{model_path}_{acc}.csv', index=False, sep=str(os.getenv('SEPARATOR')))
