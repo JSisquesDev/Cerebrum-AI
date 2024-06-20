@@ -110,7 +110,7 @@ def load_data(dataframe, target_size, batch_size, image_color_mode, image_save_p
         seed = 1
     )
     
-    test_gen = train_generator(
+    val_gen = train_generator(
         dataframe = dataframe,
         batch_size = batch_size,
         aug_dict = dict(),
@@ -120,7 +120,6 @@ def load_data(dataframe, target_size, batch_size, image_color_mode, image_save_p
         mask_save_prefix = mask_save_prefix,
         target_size = target_size,
         seed = 1
-    )
+    )    
     
-    
-    return (train_gen, test_gen)
+    return (train_gen, val_gen)

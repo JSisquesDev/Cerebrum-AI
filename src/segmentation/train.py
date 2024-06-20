@@ -79,9 +79,21 @@ if __name__ == '__main__':
     # Dividimos el dataframe en train, validation y test
     df_train, df_val, df_test = split_dataframe(dataframe)
     
-    # Cargamos los datos para UNET
-    train_gen, test_gen = load_data(
-        dataframe = dataframe,
+    # Cargamos los para entrenar a UNET
+    train_gen, train_val_gen = load_data(
+        dataframe = df_train,
+        target_size = (img_height, img_width),
+        batch_size = batch_size,
+        image_color_mode = image_color_mode,
+        image_save_prefix = image_save_prefix,
+        mask_color_mode = mask_color_mode,
+        mask_save_prefix = mask_save_prefix,
+        seed = 1
+    )
+    
+    # Cargamos los para validar a UNET
+    test_gen, test_val_gen = load_data(
+        dataframe = df_train,
         target_size = (img_height, img_width),
         batch_size = batch_size,
         image_color_mode = image_color_mode,
@@ -96,7 +108,7 @@ if __name__ == '__main__':
     
     # Generamos los callbacks para UNET
     early_stopping = EarlyStopping(monitor='val_loss', patience=patience, restore_best_weights=RESTORE_BEST_WEIGHTS)
-    checkpoint = ModelCheckpoint(checkpoint_path, monitor='val_binary_accuracy', verbose=1, save_best_only=True, mode='max')
+    checkpoint = ModelCheckpoint(checkpoint_path, monitor='dice_coef', verbose=1, save_best_only=True, mode='max')
     callbacks=[early_stopping, checkpoint]
  
     # Entrenamos el modelo UNET
@@ -104,16 +116,37 @@ if __name__ == '__main__':
         model = unet,
         train_gen = train_gen,
         steps_per_epoch = len(df_train) / batch_size,
-        validation_data = test_gen,
+        validation_data = train_val_gen,
         epochs = epochs,
         callbacks = callbacks,
         validation_steps = len(df_val) / batch_size
     )
     
+    # Evaluamos el modelo Unet
+    evaluation = unet.evaluate(
+        x = test_val_gen,
+        batch_size=batch_size,
+        verbose="auto",
+        steps = len(df_test) / batch_size,
+        return_dict = True
+    )
+    
+    # Obtenemos los resultados de la evaluación
+    eval_loss = math.floor(evaluation['loss'] * 100)
+    eval_binary_accuracy = math.floor(evaluation['binary_accuracy'] * 100) 
+    eval_iou = math.floor(evaluation['iou'] * 100) 
+    eval_dice_coef = math.floor(evaluation['dice_coef'] * 100)
+    
+    # Creamos un sufijo con los valores
+    sufix = f'l{eval_loss}_ba{eval_binary_accuracy}_iou{eval_iou}_dc{eval_dice_coef}'
+    
+    # Creamos el dataframe de la evaluación y lo guardamos
+    evaluation_dataframe = pd.DataFrame.from_dict([evaluation])
+    evaluation_dataframe.to_csv(f'{model_path}_evaluation_{sufix}.csv', index=False, sep=str(os.getenv('SEPARATOR')))
+    
     # Guardamos el modelo Unet
-    acc = math.floor(history.history["binary_accuracy"][-1] * 100)
-    unet.save(f'{model_path}_{acc}.h5', save_format='tf')
+    unet.save(f'{model_path}_{sufix}.h5', save_format='tf')
     
     # Creamos un dataframe con el historial del entrenamiento y lo guardamos
     history_dataframe = pd.DataFrame(history.history)
-    history_dataframe.to_csv(f'{model_path}_{acc}.csv', index=False, sep=str(os.getenv('SEPARATOR')))
+    history_dataframe.to_csv(f'{model_path}_history_{sufix}.csv', index=False, sep=str(os.getenv('SEPARATOR')))
