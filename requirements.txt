@@ -15,3 +15,5 @@ seaborn
 scikit-image
 scikit-learn
 notebook
+flask
+Pillow

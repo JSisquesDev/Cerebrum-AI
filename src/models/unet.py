@@ -110,7 +110,7 @@ def create_model(img_height, img_width, img_deep, activation, epochs):
     learning_rate = 1e-4
     
     decay_rate = learning_rate / epochs
-    optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=None, decay=decay_rate, amsgrad=False)
+    optimizer = tf.keras.optimizers.Adamax(learning_rate=learning_rate)
     
     model.compile(
         optimizer = optimizer,
